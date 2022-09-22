@@ -1,0 +1,36 @@
+<configuration debug="true">
+    <newRule pattern="*/censor"
+        actionClass="com.tersesystems.logback.censor.CensorAction"/>
+
+    <newRule pattern="*/censor-ref"
+        actionClass="com.tersesystems.logback.censor.CensorRefAction"/>
+
+    <conversionRule conversionWord="censor"
+        converterClass="com.tersesystems.logback.censor.CensorConverter" />
+
+    <censor name="hunter2" class="com.tersesystems.logback.censor.RegexCensor">
+        <replacementText>[CENSORED: hunter2]</replacementText>
+        <regex>hunter2</regex>
+    </censor>
+
+    <censor name="social-security-number" class="com.tersesystems.logback.censor.RegexCensor">
+        <replacementText>[CENSORED: Social Security Number: $2-XXX$3]</replacementText>
+        <regex>(^|\p{Punct})(\d{3}-\d{2})-\d{3}(\d)($|\p{Punct})</regex>
+    </censor>
+
+    <!--
+        - How can more than one censor be used here?
+    -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <jsonGeneratorDecorator class="com.tersesystems.logback.censor.CensoringJsonGeneratorDecorator">
+                <censor-ref ref="hunter2"/>
+                <censor-ref ref="social-security-number"/>
+            </jsonGeneratorDecorator>
+        </encoder>
+    </appender>
+
+    <root level="debug">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>
